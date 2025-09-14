@@ -8,8 +8,7 @@ import RadarChart from '../../Charts/Radar'
 import Curves from '../../Charts/Curves'
 import MapChartComponent from '../../Charts/Map'
 import { supabase } from '../../utils/supabaseClient'
-
-
+import ContributionGraph from '../../Charts/Contributions'
 const user = {
     name: 'Tom Cook',
     email: 'tom@example.com',
@@ -34,41 +33,47 @@ function classNames(...classes) {
 }
 
 export default function Dashboard({ token }) {
-    const [userData, setUserData] = useState(null); // State to store fetched data
+    const [userData, setUserData] = useState([]); // State to store fetched data
+    
+    
 
-    async function getchats() {
-        if (!token || !token.user) {
-            console.log("Waiting for token...");
-            return;
-        }
-        console.log(token.user.id, "this is token");
 
-        try {
-            const { data, error } = await supabase
-                .from("UData")
-                .select("id,data_best,data_current,value")
-                .eq("id", token.user.id)
-                .single(); // Assuming one user entry
+async function getcharts() {
+  if (!token || !token.user) {
+    console.log("Waiting for token...");
+    return;
+  }
 
-            if (error) {
-                throw error;
-            }
+  try {
+    const { data, error } = await supabase
+      .from("UData")
+      .select("id, data_best, data_current, value, data_type")
+      .eq("id", token.user.id);
 
-            console.log(data);
-            setUserData(data); // Store the fetched data in state
-            console.log(userData, "this is it")
-        } catch (error) {
-            console.error("Error fetching chats:", error);
-            alert("Failed to load chats. Please try again later.");
-        }
-    }
+    if (error) throw error;
+
+    console.log("All chart data:", data);
+
+    // Store everything in state
+    setUserData(data);
+
+  } catch (error) {
+    console.error("Error fetching charts:", error);
+    alert("Failed to load charts. Please try again later.");
+  }
+}
 
     useEffect(() => {
         if (token && token.user) {
-            getchats(); // Call getchats only when token is available
+            getcharts(); // Call getchats only when token is available
         }
     }, [token]);
-
+      const chart1Data = userData.filter(d => d.data_type == 1);
+      const chart2Data = userData.filter(d => d.data_type == 2);
+      const chart3Data = userData.filter(d => d.data_type == 3);
+      const chart4Data = userData.filter(d => d.data_type == 4);
+      const chart5Data = userData.filter(d => d.data_type == 5);
+      
     return (
         <>
             {/*
@@ -92,9 +97,9 @@ export default function Dashboard({ token }) {
                                     <div className="overflow-hidden relative rounded-lg bg-gray-500 shadow">
                                         <div className="p-6 w-full">
                                             <div className="rounded-lg overflow-hidden">
-                                                <RadarChart userData={[100, 6, 5, 8, userData ? userData.value / 4 : 0]}
-                                                    averageData={[700, 200, 100, 5, 5]}
-                                                    categories={['Typing', 'Talking', 'Memory', 'Consistency', 'Listening']}
+                                                <RadarChart userData={[ chart1Data[0] ? chart1Data[0].value / 4 : 0.2,chart2Data[0] ? chart2Data[0].value / 4 : 0.2,chart3Data[0] ? chart3Data[0].value / 4 : 0.2, chart4Data[0] ? chart4Data[0].value / 4 : 0.2,chart5Data[0] ? chart5Data[0].value / 4 : 0.2]}
+                                                    averageData={[100,100, 100, 220, 125]}
+                                                    categories={[ 'Memory', 'Consistency', 'Listening', 'Grammar', 'Kanji']}
                                                     scale={250}
                                                 />
                                             </div>
@@ -106,6 +111,9 @@ export default function Dashboard({ token }) {
                         </div>
 
                     </div>
+                    <ContributionGraph/>
+
+                    
                 </main>
 
             </div>

@@ -61,6 +61,7 @@ const [userData, setUserData] = useState([]); // set it as empty array, not null
 
 
 async function GetTopPlayers(type) {
+  
   console.log("clicked gettopplayers");
 
   try {

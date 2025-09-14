@@ -6,14 +6,14 @@ import { kanjiData } from "../../../../utils/kanjidata";
 class KanjiGame {
     
    
-
-
     constructor(level, section) {
         this.level = level;
         this.section = section;
         this.cg = 0;
         this.wg = 0;
-     
+        this.startdate = new Date();
+        
+
         // Check if kanjiData[level][section] is an object and convert to an array
         if (typeof kanjiData[level][section] === 'object' && !Array.isArray(kanjiData[level][section])) {
             this.originalSection = Object.values(kanjiData[level][section]);
@@ -30,6 +30,9 @@ class KanjiGame {
         this.incorrectGuessedKanji = [];
     
     }
+    getstartdate() {
+        return this.startdate;
+    }
     getCorrectGuesses() {
         return this.cg;
     }
@@ -39,6 +42,7 @@ class KanjiGame {
     getFullGuesses() {
         return this.len + this.wg;
     }
+
     // Method to get a random Kanji from the current section
     getRandomKanji() {
         if (this.currentSection.length === 0 && this.incorrectGuessedKanji.length === 0) {
@@ -112,8 +116,6 @@ class KanjiGame {
     }
     
 
-
-    //  updating data here
  
 
 

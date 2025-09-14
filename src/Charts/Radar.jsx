@@ -13,7 +13,7 @@ const RadarChart = ({ userData, averageData, categories, scale }) => {
             type: 'area'
         },
         title: {
-            text: 'User Skill Distribution'
+            text: 'Skill Distribution'
         },
         credits: {
             enabled: false // Disable Highcharts watermark
@@ -29,7 +29,7 @@ const RadarChart = ({ userData, averageData, categories, scale }) => {
         },
         plotOptions: {
             area: {
-                fillColor: 'rgba(10, 10, 10, 0.3)' // Set the fill color for the area inside the radar chart
+                fillColor: 'rgba(10, 10, 10, 0.2)' // Set the fill color for the area inside the radar chart
             }
         },
         series: [

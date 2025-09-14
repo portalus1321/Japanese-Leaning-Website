@@ -10,6 +10,8 @@ const Cards = ({ token }) =>  {
     const [cg, setCg] = useState(0);
     const [wg, setWg] = useState(0);
     const [ful, setFg] = useState(0);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
     // -----------------------
     const [resultwait,setresultwait] = useState(false);
     const [data,setUserData] = useState([]);
@@ -27,33 +29,7 @@ const Cards = ({ token }) =>  {
     const wrongStyle = { flexBasis: `${wrongPercentage}%` };
 
 
-    async function getData() {
-       console.log("clicked gettopplayers");
-       if (!token || !token.user) {
-        console.log('Waiting for token...');
-        return; // Return early if token is not available
-       }
-       try {
-         const { data, error } = await supabase
-           .from("UData")
-           .select('id,data_type,data_best,data_current,value')
-           .eq('id',token.user.id) 
 
-     
-         if (error) {
-           throw error;
-         }
-     
-        
-    
-         console.log("Fetched top players data:", data);
-         setUserData(data); // Update state
-
-       } catch (error) {
-         console.error("Error fetching top players:", error);
-         alert("Failed to load top players. Please try again later.");
-       }
-    }
      
 
     function safeParse(data) {
@@ -62,11 +38,32 @@ const Cards = ({ token }) =>  {
         }
         return data; // already an object
       }
+    function timecalculate() {
+        if (startDate && endDate) {
+            const diffInMs = endDate - startDate;
+            const diffInSeconds = Math.floor(diffInMs / 1000);
+            const minutes = Math.floor(diffInSeconds / 60);
+            const seconds = diffInSeconds % 60;
+            const lowest = 250;
+            if (seconds < lowest){
+                return 100;
+            }else{
+                return 100 * (lowest/diffInSeconds);
+            } 
+          
+        }
+        return 0;
+    }  
     function createNewResult(gameOptions,corect ,total) {
+      console.log(timecalculate(),"timecalculate value");
+      
         return {
-          Level: gameOptions.level,   // Example: "N3"
-          Group: gameOptions.section, // Example: "S1"
-          Score:  Math.round(100*(corect/total))          // Example: 100
+          Level: gameOptions.level,
+          Group: gameOptions.section,
+          Score: Math.round(100*(corect/total)),
+          Time:  timecalculate(),
+          SetDate: new Date(),     
+          Points: corect 
         };
       }
 
@@ -111,6 +108,9 @@ const Cards = ({ token }) =>  {
       
           if (currentIndex !== -1) {
             currentData.HighScores[currentIndex].Score = newResult.Score;
+            currentData.HighScores[currentIndex].Points = newResult.Points;
+            currentData.HighScores[currentIndex].Time = newResult.Time;
+            currentData.HighScores[currentIndex].SetDate = newResult.SetDate;
           } else {
             currentData.HighScores.push(newResult);
           }
@@ -123,6 +123,9 @@ const Cards = ({ token }) =>  {
           if (bestIndex !== -1) {
             if (newResult.Score > bestData.HighScores[bestIndex].Score) {
               bestData.HighScores[bestIndex].Score = newResult.Score;
+              bestData.HighScores[bestIndex].Points = newResult.Points;
+              bestData.HighScores[bestIndex].Time = newResult.Time;
+              bestData.HighScores[bestIndex].SetDate = newResult.SetDate;
             } else {
               console.log("New score is not better than best score, not updating.");
             }
@@ -210,7 +213,8 @@ const Cards = ({ token }) =>  {
     const handleOptionsSelected = (options) => {
         setGameOptions(options);
         setShowOptions(false); // Hide options after selection
-        setGame(new KanjiGame(options.level, options.section)); // Initialize game with selected options
+        setGame(new KanjiGame(options.level, options.section));
+       // Initialize game with selected options
     };
 
     const toggleOptions = () => {
@@ -226,7 +230,10 @@ const Cards = ({ token }) =>  {
 
             // Fetch the next question
             const nextQuestion = game.getNextQuestion();
+            console.log(startDate,endDate);
+            
             if (nextQuestion === "Finished") {
+                setEndDate(new Date());
                 setResultMessage("Finished");
                 setresultwait(true)
                 console.log(resultwait,"saveresult value");
@@ -242,6 +249,7 @@ const Cards = ({ token }) =>  {
         if (gameOptions) {
             const newGame = new KanjiGame(gameOptions.level, gameOptions.section);
             setGame(newGame);
+            setStartDate(new Date());
             const question = newGame.getNextQuestion();
             if (question === "Finished") {
                 
@@ -264,15 +272,13 @@ const Cards = ({ token }) =>  {
                             ? currentQuestion.correctKanji.kanji
                             : currentQuestion.correctKanji.meaning
                     ) : (
-                        <RadarCards userData={[50, 6, 20]}
+                        <RadarCards userData={[100, 6, timecalculate()]}
                             averageData={[40, 15, 100]}
                             categories={['Result', 'accuracy', 'Time']}
                             scale={100}
                         />
                     )}
-                    <div className='absolute w-full h-full opacity-50 flex'>
-
-                    </div>
+              
                     <div className="progres flex absolute border-gray-300 m-0 top-[-20px] shadow-lg border-2 rounded bg-purple-700 sm:w-[300px] md:w-[400px] lg:w-[440px] h-[10px] ">
                         <div className="cor bg-green-400 h-full" style={correctStyle}></div>
                         <div className="wro bg-red-400 h-full" style={wrongStyle}></div>

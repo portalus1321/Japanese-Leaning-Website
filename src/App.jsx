@@ -3,6 +3,7 @@ import './App.css';
 import Navbar from './components/navbar';
 import { BrowserRouter as Router, Routes, Route,Navigate, json} from 'react-router-dom';
 import MyPricing from './pages/HomeComps/pricing';
+import { supabase } from './utils/supabaseClient';
 
 import Home from './pages/home';
 import Features from './pages/HomeComps/Features';
@@ -29,14 +30,72 @@ import KanjiQuiz from './pages/LearnComps/Quiz';
 
 function App() {
   const [token, setToken] = useState(false)
+  const [log,setLog] = useState(false)
+  const [session, setSession] = useState(null);
 
 
  if(token){
   sessionStorage.setItem('token',JSON.stringify(token))
  }
+ if(log){
+  sessionStorage.setItem('log',JSON.stringify(log))
+ }
+
+ async function saveLog(contributions) {
+  if (!token?.user) return;
+
+  try {
+    const { data, error } = await supabase
+      .from("Activity")
+      .upsert(
+        { id: token.user.id, contributions },
+        { onConflict: ["id"] } // important: tells Supabase which column is unique
+      )
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    console.log("Saved log (upsert):", data);
+    return data;
+  } catch (err) {
+    console.error("Error saving log:", err);
+  }
+}
+
+ async function fetchlog(token){
+    if(!token || !token.user){
+      console.log('Waiting for token...');
+      return; // Return early if token is not available
+    }
+    try {
+      const { data, error } = supabase
+        .from("Activity")
+        .select('id,contributions')
+        .eq('id', token.user.id)
+      if (error) {
+        throw error;
+      }
+      console.log("Fetched Log of user:", data);
+      setLog(data);
+      if(data == undefined || data == null || data.length === 0){
+        console.log("no log data found, creating new log");
+        let res = await saveLog('{}');
+        return res;
+      }
+      return data;
+    
+    } catch (error) {
+      console.error("Error fetching Log:", error);
+      alert("Failed to load top players. Please try again later.");
+    }
+    
+  }
+
+
  useEffect(()=>{
      try {
-              if (sessionStorage.getItem('token')) {
+        if (sessionStorage.getItem('token')) {
         let data = JSON.parse(sessionStorage.getItem('token'))
         setToken(data)
       }  
@@ -45,6 +104,16 @@ function App() {
      }
 
  },[])
+
+  useEffect(() => {
+  if (token) {
+   
+    console.log("fetchlog run");
+    console.log(fetchlog(token));
+  }
+ }, [token]);
+
+
 
 
 
