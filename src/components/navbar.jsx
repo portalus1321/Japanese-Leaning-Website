@@ -14,7 +14,7 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/solid'
-
+import DefLogo from './Logo' 
 const products = [
   { name: 'Recourses', description: 'learn before playing', href: '#', icon: BookOpenIcon },
   { name: 'AI', description: 'Practice with ai', href: '/Learn/AI', icon: CpuChipIcon },
@@ -230,13 +230,17 @@ const Navbar = ({ token }) => {
   // )
   return (
     <header className="bg-white">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
+      {/* for commit */}
+      <nav className="mx-auto flex  items-center p-6 lg:px-6" aria-label="Global">
        {/* here must be image or logo maybe */}
-        <div className="flex lg:flex-1"> 
-          <a href="#" className="-m-1.5 p-1.5">
+        <div className="relative flex flex-1"> 
+          
+          <div className="absolute top-1/2 -translate-y-1/2 left-[5px] w-[60px] h-[60px] flex items-center" onClick={() => (window.location.href = '/')}>
             <span className="sr-only">Your Company</span>
-            <img className="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="" />
-          </a>
+            <DefLogo/>
+          </div>
+          
+          
         </div>
         <div className="flex lg:hidden">
           <button
